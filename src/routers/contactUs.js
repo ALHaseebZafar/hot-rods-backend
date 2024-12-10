@@ -1,6 +1,6 @@
 const express = require('express');
 
-const ContactUs = require('./models/contactUs'); // Adjust path as needed
+const ContactUs = require('../models/contactUs'); // Adjust path as needed
 const router = new express.Router();
 
 
@@ -41,7 +41,7 @@ router.get('/contactus', async (req, res) => {
   }
 });
 // Delete a ContactUs submission (DELETE request)
-app.delete('/contactus/:id', async (req, res) => {
+router.delete('/contactus/:id', async (req, res) => {
     try {
       const { id } = req.params;
   
