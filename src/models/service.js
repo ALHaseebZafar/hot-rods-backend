@@ -13,10 +13,11 @@ const serviceSchema = new mongoose.Schema({
     type: String, // Price as a string, will be converted to an integer
     required: true,
   },
-  professionals: [{
+  assignedProfessionals: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Professional' // Link to the Professional model
-  }]
+    ref: 'Professional', // Link to the Professional model
+    default: []
+  }],
 });
 
 // Method to convert time in string format ("1 hour 30 minutes") to minutes

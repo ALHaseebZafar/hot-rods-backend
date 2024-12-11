@@ -1,15 +1,17 @@
 const express = require("express");
 const Service = require("../models/service");
+const Professional = require("../models/professional"); // Assuming you have a Professional model
 const router = new express.Router();
 
 // Create a service
 router.post("/service", async (req, res) => {
   try {
-    const { title, time, price } = req.body;
+    const { title, time, price, assignedProfessionals } = req.body;
     const service = new Service({
       title,
       time,
       price,
+      assignedProfessionals, // Include assigned professionals here
     });
     await service.save();
     res.status(201).send({
@@ -17,27 +19,31 @@ router.post("/service", async (req, res) => {
       service,
     });
   } catch (err) {
-    res.status(400).send({ error: e.message });
+    res.status(400).send({ error: err.message });
   }
 });
+
 // Get all services
 router.get("/service", async (req, res) => {
   try {
-    const service = await Service.find();
-    if (!service) {
-      return res.status(404).send({ message: "No service found" });
+    const services = await Service.find()
+      .populate('assignedProfessionals', 'name')  // Select only the `name` field for professionals
+      .select('title time price assignedProfessionals'); // Optional: select fields for the service
+    
+    if (!services || services.length === 0) {
+      return res.status(404).send({ message: "No services found" });
     }
 
-    res.status(200).send({ service });
+    res.status(200).send({ services });
   } catch (e) {
-    res.status(500).send({ error: "Error fetching service" });
+    res.status(500).send({ error: "Error fetching services" });
   }
 });
 
 // Update a service by ID
 router.patch("/service/:id", async (req, res) => {
   const updates = Object.keys(req.body); // Get all keys from the request body
-  const allowedUpdates = ["title", "time", "price"]; // Specify which fields can be updated
+  const allowedUpdates = ["title", "time", "price", "assignedProfessionals"]; // Include assignedProfessionals
 
   // Check if all updates are valid
   const isValidUpdate = updates.every((update) =>
@@ -49,19 +55,19 @@ router.patch("/service/:id", async (req, res) => {
 
   try {
     // Update the service
-    const serivce = await Service.findByIdAndUpdate(
+    const service = await Service.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true } // new: return updated doc, runValidators: validate schema
     );
 
-    if (!serivce) {
-      return res.status(404).send({ message: "Service  not found" });
+    if (!service) {
+      return res.status(404).send({ message: "Service not found" });
     }
 
     res.status(200).send({
       message: "Service updated successfully",
-      serivce,
+      service,
     });
   } catch (e) {
     res.status(400).send({ error: "Error updating the Service" });
