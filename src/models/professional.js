@@ -1,19 +1,23 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const professionalSchema = new mongoose.Schema({
   name: {
     type: String,
-    trim: true,
     required: true,
+    trim: true
   },
   availability: {
-    type: Boolean,
-    required:true,
+    type: String,
+    default: 'yes',
+    enum: ['yes', 'no']
   },
   image: {
-    type: String, // This will store the path of the uploaded image
-  },
+    type: String,
+    trim: true,
+    required:false
+  }
 });
 
-const Professional = mongoose.model("Professional", professionalSchema);
+const Professional = mongoose.model('Professional', professionalSchema);
+
 module.exports = Professional;

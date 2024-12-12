@@ -1,6 +1,7 @@
 const express = require("express");
 require("dotenv").config(); // Load environment variables
 require("./db/mongoose"); // Connect to MongoDB
+const cors = require("cors"); // Import cors
 
 const professionalRouter=require('./routers/professional')
 const serviceRouter=require('./routers/service')
@@ -11,7 +12,10 @@ const contactUsRouter=require('./routers/contactUs')
 const app = express();
 const path = require("path");
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000; // Default to 5000 if PORT is not set
+
+
+app.use(cors());
 
 app.use(express.json());
 

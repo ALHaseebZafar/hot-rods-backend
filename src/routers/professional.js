@@ -21,6 +21,7 @@ router.post("/professional", async (req, res) => {
     });
   } catch (err) {
     res.status(400).send({ error: err.message });
+    console.log(err)
   }
 });
 
@@ -41,21 +42,34 @@ router.get("/professional", async (req, res) => {
 
 // Update a professional by ID
 router.patch("/professional/:id", async (req, res) => {
-  const updates = Object.keys(req.body);
-  const allowedUpdates = ["name", "availability", "image"];
-  const isValidUpdate = updates.every((update) =>
-    allowedUpdates.includes(update)
-  );
-
-  if (!isValidUpdate) {
-    return res.status(400).send({ message: "Invalid updates!" });
-  }
-
   try {
+    const professionalId = req.params.id;
+
+    // Validate input
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ["name", "availability", "image"];
+    const isValidUpdate = updates.every((update) =>
+      allowedUpdates.includes(update)
+    );
+
+    if (!isValidUpdate) {
+      return res.status(400).send({ message: "Invalid updates!" });
+    }
+
+    // Create an update object with only the provided fields
+    const updateObject = {};
+    updates.forEach((update) => {
+      updateObject[update] = req.body[update];
+    });
+
+    // Find and update the professional
     const professional = await Professional.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
+      professionalId, 
+      updateObject, 
+      { 
+        new: true,    // Return the updated document
+        runValidators: true  // Run schema validators
+      }
     );
 
     if (!professional) {
@@ -67,9 +81,14 @@ router.patch("/professional/:id", async (req, res) => {
       professional,
     });
   } catch (err) {
-    res.status(400).send({ error: "Error updating professional" });
+    console.error("Update error:", err);
+    res.status(400).send({ 
+      error: "Error updating professional", 
+      details: err.message 
+    });
   }
 });
+
 
 // Delete a professional by ID
 router.delete("/professional/:id", async (req, res) => {
