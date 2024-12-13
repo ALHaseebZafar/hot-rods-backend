@@ -1,6 +1,6 @@
 const express = require("express");
 const Service = require("../models/service");
-const Professional = require("../models/professional"); // Assuming you have a Professional model
+const Professional = require("../models/professional");
 const router = new express.Router();
 
 // Create a service
@@ -11,7 +11,7 @@ router.post("/service", async (req, res) => {
       title,
       time,
       price,
-      assignedProfessionals, // Include assigned professionals here
+      assignedProfessionals,
     });
     await service.save();
     res.status(201).send({
@@ -27,12 +27,8 @@ router.post("/service", async (req, res) => {
 router.get("/service", async (req, res) => {
   try {
     const services = await Service.find()
-      .populate('assignedProfessionals', 'name')  // Select only the `name` field for professionals
-      .select('title time price assignedProfessionals'); // Optional: select fields for the service
-    
-    if (!services || services.length === 0) {
-      return res.status(404).send({ message: "No services found" });
-    }
+      .populate("assignedProfessionals", "name") // Populate assigned professionals
+      .select("title time price assignedProfessionals");
 
     res.status(200).send({ services });
   } catch (e) {
@@ -42,35 +38,44 @@ router.get("/service", async (req, res) => {
 
 // Update a service by ID
 router.patch("/service/:id", async (req, res) => {
-  const updates = Object.keys(req.body); // Get all keys from the request body
-  const allowedUpdates = ["title", "time", "price", "assignedProfessionals"]; // Include assignedProfessionals
-
-  // Check if all updates are valid
-  const isValidUpdate = updates.every((update) =>
-    allowedUpdates.includes(update)
-  );
-  if (!isValidUpdate) {
-    return res.status(400).send({ message: "Invalid updates!" });
-  }
-
   try {
-    // Update the service
-    const service = await Service.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true } // new: return updated doc, runValidators: validate schema
+    const allowedUpdates = ["title", "time", "price", "assignedProfessionals"];
+    const updates = Object.keys(req.body);
+
+    // Check for invalid fields
+    const isValidOperation = updates.every((update) =>
+      allowedUpdates.includes(update)
     );
 
-    if (!service) {
-      return res.status(404).send({ message: "Service not found" });
+    if (!isValidOperation) {
+      return res.status(400).send({ error: "Invalid updates!" });
     }
+
+    const service = await Service.findById(req.params.id);
+
+    if (!service) {
+      return res.status(404).send({ error: "Service not found" });
+    }
+
+    // Apply updates dynamically
+    updates.forEach((update) => {
+      service[update] = req.body[update];
+    });
+
+    await service.save();
+
+    // Populate the updated service
+    const updatedService = await Service.findById(req.params.id).populate(
+      "assignedProfessionals",
+      "name"
+    );
 
     res.status(200).send({
       message: "Service updated successfully",
-      service,
+      service: updatedService,
     });
-  } catch (e) {
-    res.status(400).send({ error: "Error updating the Service" });
+  } catch (err) {
+    res.status(400).send({ error: "Error updating the service" });
   }
 });
 
