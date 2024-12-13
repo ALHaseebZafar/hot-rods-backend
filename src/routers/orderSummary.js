@@ -11,7 +11,7 @@ router.post("/order-summary", async (req, res) => {
       professional,
       services,
       appointment,
-      tip: tip || 0,
+      tip: tip || 0, // Default to 0 if not provided
     });
 
     // Calculate the summary
@@ -22,24 +22,46 @@ router.post("/order-summary", async (req, res) => {
       orderSummary: updatedOrderSummary,
     });
   } catch (e) {
-    console.error("Error:", e.message); // Debugging
     res.status(500).send({ error: e.message });
   }
 });
-
 // Get all order summaries
 router.get("/order-summary", async (req, res) => {
   try {
     const orderSummaries = await OrderSummary.find()
-      .populate("professional") // Populate professional details
-      .populate("services"); // Populate service details
+      .populate("professional", "name") // Ensure only the `name` field is populated
+      .populate("services", "title price time") // Populate service details
+      .populate("appointment", "date time"); // Populate appointment details
 
     res.status(200).send({
       message: "Order summaries retrieved successfully",
       orderSummaries,
     });
   } catch (e) {
-    console.error("Error:", e.message); // Debugging
+    console.error("Error:", e.message);
+    res.status(500).send({ error: e.message });
+  }
+});
+
+// Get a specific order summary by ID
+router.get("/order-summary/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const orderSummary = await OrderSummary.findById(id)
+      .populate("professional", "name ")
+      .populate("services", "title price time")
+      .populate("appointment", "date time");
+
+    if (!orderSummary) {
+      return res.status(404).send({ message: "Order summary not found" });
+    }
+
+    res.status(200).send({
+      message: "Order summary retrieved successfully",
+      orderSummary,
+    });
+  } catch (e) {
+    console.error("Error:", e.message);
     res.status(500).send({ error: e.message });
   }
 });

@@ -11,6 +11,26 @@ const inquireSchema = new mongoose.Schema({
     type: Boolean, // Indicates whether the booking is manual
     default: false,
   },
+  manualBookingDetails: {
+    date: {
+      type: String, // Booking date (e.g., '2024-12-13')
+      required: function () {
+        return this.manualBooking;
+      },
+    },
+    startTime: {
+      type: String, // Start time for manual booking (e.g., '10:00 AM')
+      required: function () {
+        return this.manualBooking;
+      },
+    },
+    endTime: {
+      type: String, // End time for manual booking (e.g., '11:00 AM')
+      required: function () {
+        return this.manualBooking;
+      },
+    },
+  },
   timeSlots: [
     {
       day: {

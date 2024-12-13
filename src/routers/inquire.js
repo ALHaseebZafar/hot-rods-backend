@@ -1,22 +1,38 @@
 const express = require("express");
-const Inquire = require("../models/inquire");  // Import the Inquire model
+const Inquire = require("../models/inquire"); // Import the Inquire model
 const router = new express.Router();
 
 // Create a new inquiry
 router.post("/inquire", async (req, res) => {
   try {
-    const { professional, manualBooking, timeSlots } = req.body;
+    const { professional, manualBooking, manualBookingDetails, timeSlots, checkedByAdmin } = req.body;
 
-    // Validate that timeSlots is an array and contains at least one slot
-    if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
-      return res.status(400).send({ message: "Time slots are required" });
+    // Validate manual booking details if manualBooking is true
+    if (manualBooking) {
+      if (
+        !manualBookingDetails ||
+        !manualBookingDetails.date ||
+        !manualBookingDetails.startTime ||
+        !manualBookingDetails.endTime
+      ) {
+        return res
+          .status(400)
+          .send({ message: "Manual booking requires date, startTime, and endTime." });
+      }
+    } else {
+      // Validate that timeSlots is an array and contains at least one slot
+      if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
+        return res.status(400).send({ message: "Time slots are required for non-manual booking." });
+      }
     }
 
-    // Create a new inquire instance
+    // Create a new inquiry instance
     const inquire = new Inquire({
       professional,
       manualBooking,
-      timeSlots,
+      manualBookingDetails: manualBooking ? manualBookingDetails : undefined,
+      timeSlots: manualBooking ? [] : timeSlots,
+      checkedByAdmin,
     });
 
     // Save the inquiry to the database
@@ -70,30 +86,64 @@ router.get("/inquire/:id", async (req, res) => {
 });
 
 // Update an inquiry by ID
+// Update an inquiry by ID (Updated)
 router.patch("/inquire/:id", async (req, res) => {
-  const allowedUpdates = ["manualBooking", "timeSlots", "checkedByAdmin"];
-  const updates = Object.keys(req.body);
-
-  const isValidOperation = updates.every((update) =>
-    allowedUpdates.includes(update)
-  );
-
-  if (!isValidOperation) {
-    return res.status(400).send({ message: "Invalid updates!" });
-  }
-
   try {
     const { id } = req.params;
+    const { manualBooking, manualBookingDetails, timeSlots } = req.body;
 
-    // Update the inquiry with the provided fields
-    const inquire = await Inquire.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    }).populate("professional", "name image");
-
+    // Find the existing inquiry
+    const inquire = await Inquire.findById(id);
+    
     if (!inquire) {
       return res.status(404).send({ message: "Inquiry not found" });
     }
+
+    // Update booking type
+    inquire.manualBooking = manualBooking;
+
+    // Reset previous booking details based on new booking type
+    if (manualBooking) {
+      // Validate manual booking details
+      if (
+        !manualBookingDetails ||
+        !manualBookingDetails.date ||
+        !manualBookingDetails.startTime ||
+        !manualBookingDetails.endTime
+      ) {
+        return res
+          .status(400)
+          .send({ message: "Manual booking requires date, startTime, and endTime." });
+      }
+
+      // Set manual booking details and clear time slots
+      inquire.manualBookingDetails = manualBookingDetails;
+      inquire.timeSlots = [];
+    } else {
+      // Validate time slots for non-manual booking
+      if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
+        return res
+          .status(400)
+          .send({ message: "Time slots are required for non-manual booking." });
+      }
+
+      // Clear manual booking details and set time slots
+      inquire.manualBookingDetails = undefined;
+      inquire.timeSlots = timeSlots;
+    }
+
+    // Optional: Update professional if passed
+    if (req.body.professional) {
+      inquire.professional = req.body.professional;
+    }
+
+    // Optional: Update checked by admin status
+    if (req.body.checkedByAdmin !== undefined) {
+      inquire.checkedByAdmin = req.body.checkedByAdmin;
+    }
+
+    // Save updated inquiry
+    await inquire.save();
 
     res.status(200).send({
       message: "Inquiry updated successfully",
