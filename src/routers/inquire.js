@@ -67,20 +67,22 @@ router.get("/inquire", async (req, res) => {
 });
 
 // Get a specific inquiry by ID
-router.get("/inquire/:id", async (req, res) => {
+router.get("/inquire/:professionalId", async (req, res) => {
   try {
-    const { id } = req.params;
+    const { professionalId } = req.params;
 
-    const inquire = await Inquire.findById(id)
-      .populate("professional", "name image")
+    // Find inquiries by professional ID
+    const inquiries = await Inquire.find({ professional: professionalId })
+      .populate("professional", "name image") // Populate professional details
       .exec();
 
-    if (!inquire) {
-      return res.status(404).send({ message: "Inquiry not found" });
+    if (!inquiries || inquiries.length === 0) {
+      return res.status(404).send({ message: "No inquiries found for this professional" });
     }
 
-    res.status(200).send({ inquire });
+    res.status(200).send({ inquiries });
   } catch (e) {
+    console.error("Error fetching inquiries:", e.message);
     res.status(500).send({ error: e.message });
   }
 });
