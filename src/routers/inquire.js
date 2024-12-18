@@ -67,12 +67,12 @@ router.get("/inquire", async (req, res) => {
 });
 
 // Get a specific inquiry by ID
-router.get("/inquire/:professionalId", async (req, res) => {
+router.get("/inquire/:id", async (req, res) => {
   try {
-    const { professionalId } = req.params;
+    const { id } = req.params;
 
     // Find inquiries by professional ID
-    const inquiries = await Inquire.find({ professional: professionalId })
+    const inquiries = await Inquire.find({ professional: id })
       .populate("professional", "name image") // Populate professional details
       .exec();
 

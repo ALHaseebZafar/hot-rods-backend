@@ -44,11 +44,11 @@ router.get("/appointment", async (req, res) => {
   }
 });
 
-router.get("/appointment/:id", async (req, res) => {
+router.get("/appointment", async (req, res) => {
   try {
-    const { id } = req.params;
+    const { date,time } = req.body;
 
-    const appointment = await Appointment.findById(id)
+    const appointment = await Appointment.find()
       .populate("professional", "name image")
       .populate("services", "title time price");
 
