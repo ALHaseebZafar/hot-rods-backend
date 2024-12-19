@@ -52,34 +52,32 @@ router.post("/inquire", async (req, res) => {
 // Get all inquiries
 router.get("/inquire", async (req, res) => {
   try {
-    const inquires = await Inquire.find()
-      .populate("professional", "name image") // Populate professional details
-      .exec();
-
-    if (inquires.length === 0) {
-      return res.status(404).send({ message: "No inquiries found" });
-    }
-
-    res.status(200).send({ inquires });
+    const inquires = await Inquire.find().populate("professional", "name availability").exec();
+    res.status(200).send({ inquires}); // Always return an empty array instead of 404
   } catch (e) {
+    console.error("Error fetching inquiries:", e.message);
     res.status(500).send({ error: e.message });
   }
 });
 
+
+
 // Get a specific inquiry by ID
-router.get("/inquire/:id", async (req, res) => {
+router.get("/inquire/:professionalId", async (req, res) => {
   try {
-    const { id } = req.params;
+    const { professionalId } = req.params;
 
     // Find inquiries by professional ID
-    const inquiries = await Inquire.find({ professional: id })
-      .populate("professional", "name image") // Populate professional details
+    const inquiries = await Inquire.find({ professional: professionalId }) // Use professional ID for filtering
+      .populate("professional", "name availability  notAvailable ") // Populate professional details
       .exec();
 
+    // Check if inquiries exist
     if (!inquiries || inquiries.length === 0) {
       return res.status(404).send({ message: "No inquiries found for this professional" });
     }
 
+    // Respond with inquiries
     res.status(200).send({ inquiries });
   } catch (e) {
     console.error("Error fetching inquiries:", e.message);
@@ -87,7 +85,6 @@ router.get("/inquire/:id", async (req, res) => {
   }
 });
 
-// Update an inquiry by ID
 // Update an inquiry by ID (Updated)
 router.patch("/inquire/:id", async (req, res) => {
   try {

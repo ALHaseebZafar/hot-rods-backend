@@ -24,58 +24,33 @@ router.post("/professional", async (req, res) => {
   }
 });
 
-// Update a professional by ID
 router.patch("/professional/:id", async (req, res) => {
   try {
-    const professionalId = req.params.id;
+      const updates = {
+          availability: req.body.availability,
+          notAvailable: req.body.availability ? [] : req.body.notAvailable,
+          name: req.body.name,
+          image: req.body.image,
+      };
 
-    // Validate input
-    const updates = Object.keys(req.body);
-    const allowedUpdates = ["name", "availability", "image", "notAvailable"];
-    const isValidUpdate = updates.every((update) =>
-      allowedUpdates.includes(update)
-    );
+      const professional = await Professional.findByIdAndUpdate(req.params.id, updates, {
+          new: true,
+          runValidators: true,
+      });
 
-    if (!isValidUpdate) {
-      return res.status(400).send({ message: "Invalid updates!" });
-    }
-
-    // Format availability if provided
-    if (req.body.availability) {
-      req.body.availability = req.body.availability.map((entry) => ({
-        date: new Date(entry.date),
-        day: new Date(entry.date).toLocaleDateString("en-US", {
-          weekday: "long",
-        }),
-      }));
-    }
-
-    // Update the professional
-    const professional = await Professional.findByIdAndUpdate(
-      professionalId,
-      req.body,
-      {
-        new: true, // Return the updated document
-        runValidators: true, // Run schema validators
+      if (!professional) {
+          return res.status(404).send({ message: "Professional not found" });
       }
-    );
 
-    if (!professional) {
-      return res.status(404).send({ message: "Professional not found" });
-    }
-
-    res.status(200).send({
-      message: "Professional updated successfully",
-      professional,
-    });
+      res.status(200).send({
+          message: "Professional updated successfully",
+          professional,
+      });
   } catch (err) {
-    console.error("Update error:", err);
-    res.status(400).send({
-      error: "Error updating professional",
-      details: err.message,
-    });
+      res.status(400).send({ error: err.message });
   }
 });
+
 // Get all professionals
 router.get("/professional", async (req, res) => {
   try {
