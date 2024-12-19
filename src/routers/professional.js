@@ -5,12 +5,11 @@ const router = new express.Router();
 // Create a professional
 router.post("/professional", async (req, res) => {
   try {
-    const { name, availability, image } = req.body;
+    const { name, image } = req.body;
 
-    // Create a new professional
+    // Create a new professional (exclude availability and notAvailable)
     const professional = new Professional({
       name,
-      availability,
       image,
     });
 
@@ -21,24 +20,9 @@ router.post("/professional", async (req, res) => {
     });
   } catch (err) {
     res.status(400).send({ error: err.message });
-    console.log(err)
+    console.error(err);
   }
 });
-
-// Get all professionals
-router.get("/professional", async (req, res) => {
-  try {
-    const professionals = await Professional.find();
-    if (!professionals || professionals.length === 0) {
-      return res.status(404).send({ message: "No professionals found" });
-    }
-    res.status(200).send({ professionals });
-  } catch (err) {
-    res.status(500).send({ error: "Error fetching professionals" });
-  }
-});
-
-
 
 // Update a professional by ID
 router.patch("/professional/:id", async (req, res) => {
@@ -47,7 +31,7 @@ router.patch("/professional/:id", async (req, res) => {
 
     // Validate input
     const updates = Object.keys(req.body);
-    const allowedUpdates = ["name", "availability", "image"];
+    const allowedUpdates = ["name", "availability", "image", "notAvailable"];
     const isValidUpdate = updates.every((update) =>
       allowedUpdates.includes(update)
     );
@@ -56,19 +40,23 @@ router.patch("/professional/:id", async (req, res) => {
       return res.status(400).send({ message: "Invalid updates!" });
     }
 
-    // Create an update object with only the provided fields
-    const updateObject = {};
-    updates.forEach((update) => {
-      updateObject[update] = req.body[update];
-    });
+    // Format availability if provided
+    if (req.body.availability) {
+      req.body.availability = req.body.availability.map((entry) => ({
+        date: new Date(entry.date),
+        day: new Date(entry.date).toLocaleDateString("en-US", {
+          weekday: "long",
+        }),
+      }));
+    }
 
-    // Find and update the professional
+    // Update the professional
     const professional = await Professional.findByIdAndUpdate(
-      professionalId, 
-      updateObject, 
-      { 
-        new: true,    // Return the updated document
-        runValidators: true  // Run schema validators
+      professionalId,
+      req.body,
+      {
+        new: true, // Return the updated document
+        runValidators: true, // Run schema validators
       }
     );
 
@@ -82,13 +70,24 @@ router.patch("/professional/:id", async (req, res) => {
     });
   } catch (err) {
     console.error("Update error:", err);
-    res.status(400).send({ 
-      error: "Error updating professional", 
-      details: err.message 
+    res.status(400).send({
+      error: "Error updating professional",
+      details: err.message,
     });
   }
 });
-
+// Get all professionals
+router.get("/professional", async (req, res) => {
+  try {
+    const professionals = await Professional.find();
+    if (!professionals || professionals.length === 0) {
+      return res.status(404).send({ message: "No professionals found" });
+    }
+    res.status(200).send({ professionals });
+  } catch (err) {
+    res.status(500).send({ error: "Error fetching professionals" });
+  }
+});
 
 // Delete a professional by ID
 router.delete("/professional/:id", async (req, res) => {
@@ -108,7 +107,5 @@ router.delete("/professional/:id", async (req, res) => {
     });
   }
 });
-
-
 
 module.exports = router;
