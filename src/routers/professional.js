@@ -51,11 +51,10 @@ router.patch("/professional/:id", async (req, res) => {
   }
 });
 
-// Get all professionals
 router.get("/professional", async (req, res) => {
   try {
     const professionals = await Professional.find();
-    if (!professionals || professionals.length === 0) {
+    if (!professionals) {
       return res.status(404).send({ message: "No professionals found" });
     }
     res.status(200).send({ professionals });

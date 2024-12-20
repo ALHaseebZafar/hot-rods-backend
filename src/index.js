@@ -10,6 +10,7 @@ const orderSummaryRouter=require('./routers/orderSummary')
 const inquireRouter=require('./routers/inquire')
 const contactUsRouter=require('./routers/contactUs')
 const authorizeRouter=require('./routers/authorize')
+const shopTimingRouter=require('./routers/shopTiming')
 const app = express();
 const path = require("path");
 
@@ -30,6 +31,7 @@ app.use(orderSummaryRouter);
 app.use(inquireRouter);
 app.use(contactUsRouter);
 app.use(authorizeRouter);
+app.use(shopTimingRouter);
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
