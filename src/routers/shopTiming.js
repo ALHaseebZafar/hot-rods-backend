@@ -13,6 +13,7 @@ router.post("/shop-timing", async (req, res) => {
     const savedShopTiming = await newShopTiming.save();
     res.status(201).json(savedShopTiming);
   } catch (err) {
+    console.error("Error creating shop timing:", err);
     res.status(400).json({ message: err.message });
   }
 });
@@ -23,6 +24,7 @@ router.get("/shop-timing", async (req, res) => {
     const shopTimings = await ShopTiming.find();
     res.status(200).json(shopTimings);
   } catch (err) {
+    console.error("Error fetching shop timings:", err);
     res.status(400).json({ message: err.message });
   }
 });
@@ -34,6 +36,7 @@ router.get("/shop-timing/:id", async (req, res) => {
     if (!shopTiming) return res.status(404).json({ message: "ShopTiming not found" });
     res.status(200).json(shopTiming);
   } catch (err) {
+    console.error("Error fetching shop timing by ID:", err);
     res.status(400).json({ message: err.message });
   }
 });
@@ -52,6 +55,7 @@ router.put("/shop-timing/:id", async (req, res) => {
     if (!updatedShopTiming) return res.status(404).json({ message: "ShopTiming not found" });
     res.status(200).json(updatedShopTiming);
   } catch (err) {
+    console.error("Error updating shop timing:", err);
     res.status(400).json({ message: err.message });
   }
 });
@@ -63,6 +67,7 @@ router.delete("/shop-timing/:id", async (req, res) => {
     if (!deletedShopTiming) return res.status(404).json({ message: "ShopTiming not found" });
     res.status(200).json({ message: "ShopTiming deleted" });
   } catch (err) {
+    console.error("Error deleting shop timing:", err);
     res.status(400).json({ message: err.message });
   }
 });
