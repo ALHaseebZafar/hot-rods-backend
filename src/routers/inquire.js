@@ -5,34 +5,12 @@ const router = new express.Router();
 // Create a new inquiry
 router.post("/inquire", async (req, res) => {
   try {
-    const { professional, manualBooking, manualBookingDetails, timeSlots, checkedByAdmin } = req.body;
-
-    // Validate manual booking details if manualBooking is true
-    if (manualBooking) {
-      if (
-        !manualBookingDetails ||
-        !manualBookingDetails.date ||
-        !manualBookingDetails.startTime ||
-        !manualBookingDetails.endTime
-      ) {
-        return res
-          .status(400)
-          .send({ message: "Manual booking requires date, startTime, and endTime." });
-      }
-    } else {
-      // Validate that timeSlots is an array and contains at least one slot
-      if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
-        return res.status(400).send({ message: "Time slots are required for non-manual booking." });
-      }
-    }
+    const { professional, manualBookingDetails } = req.body;
 
     // Create a new inquiry instance
     const inquire = new Inquire({
       professional,
-      manualBooking,
-      manualBookingDetails: manualBooking ? manualBookingDetails : undefined,
-      timeSlots: manualBooking ? [] : timeSlots,
-      checkedByAdmin,
+      manualBookingDetails
     });
 
     // Save the inquiry to the database
@@ -53,23 +31,21 @@ router.post("/inquire", async (req, res) => {
 router.get("/inquire", async (req, res) => {
   try {
     const inquires = await Inquire.find().populate("professional", "name availability").exec();
-    res.status(200).send({ inquires}); // Always return an empty array instead of 404
+    res.status(200).send({ inquires }); // Always return an empty array instead of 404
   } catch (e) {
     console.error("Error fetching inquiries:", e.message);
     res.status(500).send({ error: e.message });
   }
 });
 
-
-
-// Get a specific inquiry by ID
+// Get a specific inquiry by professional ID
 router.get("/inquire/:professionalId", async (req, res) => {
   try {
     const { professionalId } = req.params;
 
     // Find inquiries by professional ID
-    const inquiries = await Inquire.find({ professional: professionalId }) // Use professional ID for filtering
-      .populate("professional", "name availability  notAvailable ") // Populate professional details
+    const inquiries = await Inquire.find({ professional: professionalId })
+      .populate("professional", "name availability notAvailable")
       .exec();
 
     // Check if inquiries exist
@@ -85,63 +61,30 @@ router.get("/inquire/:professionalId", async (req, res) => {
   }
 });
 
-// Update an inquiry by ID (Updated)
+// Update an inquiry by ID
 router.patch("/inquire/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { manualBooking, manualBookingDetails, timeSlots } = req.body;
+    const { manualBookingDetails, professional } = req.body;
 
     // Find the existing inquiry
     const inquire = await Inquire.findById(id);
-    
+
     if (!inquire) {
       return res.status(404).send({ message: "Inquiry not found" });
     }
 
-    // Update booking type
-    inquire.manualBooking = manualBooking;
-
-    // Reset previous booking details based on new booking type
-    if (manualBooking) {
-      // Validate manual booking details
-      if (
-        !manualBookingDetails ||
-        !manualBookingDetails.date ||
-        !manualBookingDetails.startTime ||
-        !manualBookingDetails.endTime
-      ) {
-        return res
-          .status(400)
-          .send({ message: "Manual booking requires date, startTime, and endTime." });
-      }
-
-      // Set manual booking details and clear time slots
+    // Update manual booking details
+    if (manualBookingDetails) {
       inquire.manualBookingDetails = manualBookingDetails;
-      inquire.timeSlots = [];
-    } else {
-      // Validate time slots for non-manual booking
-      if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
-        return res
-          .status(400)
-          .send({ message: "Time slots are required for non-manual booking." });
-      }
-
-      // Clear manual booking details and set time slots
-      inquire.manualBookingDetails = undefined;
-      inquire.timeSlots = timeSlots;
     }
 
     // Optional: Update professional if passed
-    if (req.body.professional) {
-      inquire.professional = req.body.professional;
+    if (professional) {
+      inquire.professional = professional;
     }
 
-    // Optional: Update checked by admin status
-    if (req.body.checkedByAdmin !== undefined) {
-      inquire.checkedByAdmin = req.body.checkedByAdmin;
-    }
-
-    // Save updated inquiry
+    // Save the updated inquiry
     await inquire.save();
 
     res.status(200).send({
