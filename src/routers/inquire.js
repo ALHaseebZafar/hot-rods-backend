@@ -70,20 +70,23 @@ router.patch("/inquire/:professionalId", async (req, res) => {
 
     // Find the inquiry by professional ID
     const inquire = await Inquire.findOne({ professional: professionalId });
-
     if (!inquire) {
       return res.status(404).send({ message: "Inquiry not found" });
     }
 
-    // Update the manualBookingDetails array
-    inquire.manualBookingDetails = manualBookingDetails;
-    inquire.onlineBookingDetails = onlineBookingDetails;
+   // Only overwrite the fields that are sent
+if (manualBookingDetails !== undefined) {
+  inquire.manualBookingDetails = manualBookingDetails;
+}
+if (onlineBookingDetails !== undefined) {
+  inquire.onlineBookingDetails = onlineBookingDetails;
+}
 
     // Save the updated inquiry
     const updatedInquire = await inquire.save();
-    
+
     // Populate the professional details
-    await updatedInquire.populate('professional')
+    await updatedInquire.populate("professional");
 
     res.status(200).send({
       message: "Inquiry updated successfully",
@@ -93,6 +96,7 @@ router.patch("/inquire/:professionalId", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+
 
 // Delete an inquiry by ID
 router.delete("/inquire/:id", async (req, res) => {
