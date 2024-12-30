@@ -66,7 +66,7 @@ router.get("/inquire/", async (req, res) => {
 router.patch("/inquire/:professionalId", async (req, res) => {
   try {
     const { professionalId } = req.params;
-    const { manualBookingDetails,onlineBookingDetails } = req.body;
+    const { manualBookingDetails, onlineBookingDetails } = req.body;
 
     // Find the inquiry by professional ID
     const inquire = await Inquire.findOne({ professional: professionalId });
@@ -79,12 +79,11 @@ router.patch("/inquire/:professionalId", async (req, res) => {
     inquire.manualBookingDetails = manualBookingDetails;
     inquire.onlineBookingDetails = onlineBookingDetails;
 
-
     // Save the updated inquiry
     const updatedInquire = await inquire.save();
     
     // Populate the professional details
-    await updatedInquire.populate('professional');
+    await updatedInquire.populate('professional').execPopulate();
 
     res.status(200).send({
       message: "Inquiry updated successfully",
