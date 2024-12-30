@@ -40,7 +40,7 @@ router.get("/inquire", async (req, res) => {
 });
 
 // Get a specific inquiry by professional ID
-router.get("/inquire/:professionalId", async (req, res) => {
+router.get("/inquire/", async (req, res) => {
   try {
     const { professionalId } = req.params;
 
@@ -66,7 +66,7 @@ router.get("/inquire/:professionalId", async (req, res) => {
 router.patch("/inquire/:professionalId", async (req, res) => {
   try {
     const { professionalId } = req.params;
-    const { manualBookingDetails, onlineBookingDetails } = req.body;
+    const { manualBookingDetails,onlineBookingDetails } = req.body;
 
     // Find the inquiry by professional ID
     const inquire = await Inquire.findOne({ professional: professionalId });
@@ -75,22 +75,20 @@ router.patch("/inquire/:professionalId", async (req, res) => {
       return res.status(404).send({ message: "Inquiry not found" });
     }
 
-    // Update manual booking details if provided
-    if (manualBookingDetails) {
-      inquire.manualBookingDetails = manualBookingDetails;
-    }
+    // Update the manualBookingDetails array
+    inquire.manualBookingDetails = manualBookingDetails;
+    inquire.onlineBookingDetails = onlineBookingDetails;
 
-    // Update online booking details if provided
-    if (onlineBookingDetails) {
-      inquire.onlineBookingDetails = onlineBookingDetails;
-    }
 
     // Save the updated inquiry
-    await inquire.save();
+    const updatedInquire = await inquire.save();
+    
+    // Populate the professional details
+    await updatedInquire.populate('professional');
 
     res.status(200).send({
       message: "Inquiry updated successfully",
-      inquire,
+      inquire: updatedInquire,
     });
   } catch (error) {
     res.status(400).send({ error: error.message });
