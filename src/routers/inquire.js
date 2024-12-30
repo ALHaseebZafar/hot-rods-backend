@@ -63,28 +63,26 @@ router.get("/inquire/:professionalId", async (req, res) => {
 });
 
 // Update an inquiry by ID
-router.patch("/inquire/:id", async (req, res) => {
+router.patch("/inquire/:professionalId", async (req, res) => {
   try {
-    const { id } = req.params;
-    const { manualBookingDetails, professional,onlineBookingDetails } = req.body;
+    const { professionalId } = req.params;
+    const { manualBookingDetails, onlineBookingDetails } = req.body;
 
-    // Find the existing inquiry
-    const inquire = await Inquire.findById(id);
+    // Find the inquiry by professional ID
+    const inquire = await Inquire.findOne({ professional: professionalId });
 
     if (!inquire) {
       return res.status(404).send({ message: "Inquiry not found" });
     }
 
-    // Update manual booking details
+    // Update manual booking details if provided
     if (manualBookingDetails) {
       inquire.manualBookingDetails = manualBookingDetails;
     }
-    if(onlineBookingDetails){
-inquire.onlineBookingDetails=onlineBooking;
-    }
-    // Optional: Update professional if passed
-    if (professional) {
-      inquire.professional = professional;
+
+    // Update online booking details if provided
+    if (onlineBookingDetails) {
+      inquire.onlineBookingDetails = onlineBookingDetails;
     }
 
     // Save the updated inquiry
@@ -94,8 +92,8 @@ inquire.onlineBookingDetails=onlineBooking;
       message: "Inquiry updated successfully",
       inquire,
     });
-  } catch (e) {
-    res.status(400).send({ error: e.message });
+  } catch (error) {
+    res.status(400).send({ error: error.message });
   }
 });
 
