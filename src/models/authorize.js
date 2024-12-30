@@ -81,7 +81,7 @@ const authorizeSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, 'Email is required'],
-      unique: true, // Ensures no duplicate emails
+      // unique: true, // Ensures no duplicate emails
       trim: true,
       lowercase: true,
       match: [
