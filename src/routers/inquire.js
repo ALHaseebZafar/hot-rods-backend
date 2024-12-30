@@ -83,7 +83,7 @@ router.patch("/inquire/:professionalId", async (req, res) => {
     const updatedInquire = await inquire.save();
     
     // Populate the professional details
-    await updatedInquire.populate('professional').execPopulate();
+    await updatedInquire.populate('professional')
 
     res.status(200).send({
       message: "Inquiry updated successfully",
