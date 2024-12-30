@@ -5,12 +5,13 @@ const router = new express.Router();
 // Create a new inquiry
 router.post("/inquire", async (req, res) => {
   try {
-    const { professional, manualBookingDetails } = req.body;
+    const { professional, manualBookingDetails,onlineBookingDetails } = req.body;
 
     // Create a new inquiry instance
     const inquire = new Inquire({
       professional,
-      manualBookingDetails
+      manualBookingDetails,
+      onlineBookingDetails
     });
 
     // Save the inquiry to the database
@@ -65,7 +66,7 @@ router.get("/inquire/:professionalId", async (req, res) => {
 router.patch("/inquire/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { manualBookingDetails, professional } = req.body;
+    const { manualBookingDetails, professional,onlineBookingDetails } = req.body;
 
     // Find the existing inquiry
     const inquire = await Inquire.findById(id);
@@ -78,7 +79,9 @@ router.patch("/inquire/:id", async (req, res) => {
     if (manualBookingDetails) {
       inquire.manualBookingDetails = manualBookingDetails;
     }
-
+    if(onlineBookingDetails){
+inquire.onlineBookingDetails=onlineBooking;
+    }
     // Optional: Update professional if passed
     if (professional) {
       inquire.professional = professional;
