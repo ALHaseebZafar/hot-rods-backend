@@ -63,7 +63,7 @@ router.get("/inquire/", async (req, res) => {
 });
 
 // Update an inquiry by ID
-router.patch("/inquire/:professionalId", async (req, res) => {
+router.post("/inquire/:professionalId", async (req, res) => {
   try {
     const { professionalId } = req.params;
     const { manualBookingDetails, onlineBookingDetails } = req.body;
