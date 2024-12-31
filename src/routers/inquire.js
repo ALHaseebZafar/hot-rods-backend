@@ -63,34 +63,42 @@ router.get("/inquire/", async (req, res) => {
 });
 
 // Update an inquiry by ID
-router.post("/inquire/:professionalId", async (req, res) => {
+router.patch("/inquire/:professionalId", async (req, res) => {
   try {
     const { professionalId } = req.params;
-    const { manualBookingDetails, onlineBookingDetails } = req.body;
-
-    // Find the inquiry by professional ID
-    const inquire = await Inquire.findOne({ professional: professionalId });
+    // Default to empty arrays if they’re not provided
+    let { manualBookingDetails = [], onlineBookingDetails = [] } = req.body;
+    // 1. Find the inquiry by professional ID
+    let inquire = await Inquire.findOne({ professional: professionalId });
+    // 2. If not found, CREATE a new doc
     if (!inquire) {
-      return res.status(404).send({ message: "Inquiry not found" });
+      inquire = new Inquire({
+        professional: professionalId,
+        manualBookingDetails,
+        onlineBookingDetails,
+      });
+    } else {
+      // If found, you can either overwrite or append:
+      // --- Overwrite version ---
+      // inquire.manualBookingDetails = manualBookingDetails;
+      // inquire.onlineBookingDetails = onlineBookingDetails;
+      // --- Append version ---
+      if (manualBookingDetails.length) {
+        inquire.manualBookingDetails.push(...manualBookingDetails);
+      }
+      if (onlineBookingDetails.length) {
+        inquire.onlineBookingDetails.push(...onlineBookingDetails);
+      }
     }
-
-   // Only overwrite the fields that are sent
-   if (manualBookingDetails?.length) {
-    inquire.manualBookingDetails.push(...manualBookingDetails);
-  }
-  if (onlineBookingDetails?.length) {
-    inquire.onlineBookingDetails.push(...onlineBookingDetails);
-  }
-
-
-    // Save the updated inquiry
+    // 3. Save the inquiry
     const updatedInquire = await inquire.save();
-
-    // Populate the professional details
+    // 4. Populate any needed fields
     await updatedInquire.populate("professional");
-
-    res.status(200).send({
-      message: "Inquiry updated successfully",
+    // 5. Return either 201 (created) or 200 (updated)
+    res.status(inquire.isNew ? 201 : 200).send({
+      message: inquire.isNew
+        ? "Inquiry created successfully"
+        : "Inquiry updated successfully",
       inquire: updatedInquire,
     });
   } catch (error) {
