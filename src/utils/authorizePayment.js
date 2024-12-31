@@ -46,10 +46,10 @@ const sendEmail = async (email, subject, body) => {
     const merchantAuthentication =
       new APIContracts.MerchantAuthenticationType();
     merchantAuthentication.setName(
-  "5c4XmuY23f"
+  // "5c4XmuY23f"
     );
     merchantAuthentication.setTransactionKey(
-   "6p2B3BfWkmH287Vf"
+  //  "6p2B3BfWkmH287Vf"
     );
     const creditCard = new APIContracts.CreditCardType();
     creditCard.setCardNumber(cardNumber);
@@ -94,18 +94,18 @@ const sendEmail = async (email, subject, body) => {
             // Send success email
             await sendEmail(
               email,
-              "Payment Successful - Music Program",
-              `
-            <p>Dear ${firstName} ${lastName},</p>
-    <p>Thank you for completing your payment of <strong>$${amount}</strong> for the Music Program at <strong>Southlake Tutoring</strong>. We are thrilled to confirm that your registration has been successfully processed.</p>
-    <p><b>Your Registration ID:</b> ${registrationId}</p>
-    <p>Our Music Program is designed to inspire creativity, nurture talent, and build confidence in every participant. Whether you are beginning your musical journey or refining your skills, our experienced instructors and engaging curriculum will help you achieve your goals. By joining this program, you’re taking a significant step toward exploring the joy and discipline of music.</p>
-    <p>If you have any questions about your registration or the program details, please feel free to contact us. You can reach us at <a href="mailto:support@southlaketutoring.com">support@southlaketutoring.com</a> or call us at (123) 456-7890. We’re here to assist you every step of the way.</p>
-    <p>We look forward to having you in the Music Program and witnessing your progress as part of our community. Thank you for choosing Southlake Tutoring to support your musical aspirations.</p>
-    <p>Warm regards,</p>
-    <p><strong>Southlake Tutoring Team</strong></p>
-    <p><i>Empowering Creativity, Building Futures</i></p>
-`
+              "Payment Successful ",
+//               `
+//             <p>Dear ${firstName} ${lastName},</p>
+//     <p>Thank you for completing your payment of <strong>$${amount}</strong> for the Music Program at <strong>Southlake Tutoring</strong>. We are thrilled to confirm that your registration has been successfully processed.</p>
+//     <p><b>Your Registration ID:</b> ${registrationId}</p>
+//     <p>Our Music Program is designed to inspire creativity, nurture talent, and build confidence in every participant. Whether you are beginning your musical journey or refining your skills, our experienced instructors and engaging curriculum will help you achieve your goals. By joining this program, you’re taking a significant step toward exploring the joy and discipline of music.</p>
+//     <p>If you have any questions about your registration or the program details, please feel free to contact us. You can reach us at <a href="mailto:support@southlaketutoring.com">support@southlaketutoring.com</a> or call us at (123) 456-7890. We’re here to assist you every step of the way.</p>
+//     <p>We look forward to having you in the Music Program and witnessing your progress as part of our community. Thank you for choosing Southlake Tutoring to support your musical aspirations.</p>
+//     <p>Warm regards,</p>
+//     <p><strong>Southlake Tutoring Team</strong></p>
+//     <p><i>Empowering Creativity, Building Futures</i></p>
+// `
             );
             resolve({
               message: "Payment Successful",
