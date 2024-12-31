@@ -75,12 +75,13 @@ router.patch("/inquire/:professionalId", async (req, res) => {
     }
 
    // Only overwrite the fields that are sent
-if (manualBookingDetails !== undefined) {
-  inquire.manualBookingDetails = manualBookingDetails;
-}
-if (onlineBookingDetails !== undefined) {
-  inquire.onlineBookingDetails = onlineBookingDetails;
-}
+   if (manualBookingDetails?.length) {
+    inquire.manualBookingDetails.push(...manualBookingDetails);
+  }
+  if (onlineBookingDetails?.length) {
+    inquire.onlineBookingDetails.push(...onlineBookingDetails);
+  }
+
 
     // Save the updated inquiry
     const updatedInquire = await inquire.save();
@@ -96,7 +97,6 @@ if (onlineBookingDetails !== undefined) {
     res.status(400).send({ error: error.message });
   }
 });
-
 
 // Delete an inquiry by ID
 router.delete("/inquire/:id", async (req, res) => {
